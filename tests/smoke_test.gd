@@ -31,6 +31,19 @@ func _run() -> void:
 	_expect(_tiers(main) == [1], "watermelons vanish (got %s)" % [_tiers(main)])
 	_expect(not main.is_over, "no game over yet")
 
+	# Keyboard: holding move_right shifts the dropper; the drop action drops a fruit.
+	var start_x: float = main.drop_x
+	Input.action_press("move_right")
+	await _wait_physics(30)
+	Input.action_release("move_right")
+	_expect(main.drop_x > start_x, "move_right shifts the dropper (%.0f -> %.0f)" % [start_x, main.drop_x])
+	var count_before := _tiers(main).size()
+	Input.action_press("drop")
+	await _wait_physics(2)
+	Input.action_release("drop")
+	_expect(_tiers(main).size() == count_before + 1, "drop action spawns a fruit")
+	await _wait_physics(240)
+
 	# A settled fruit held above the danger line ends the game.
 	var stuck: Fruit = main._spawn_fruit(0, Vector2(120, 330))
 	stuck.freeze = true

@@ -15,6 +15,8 @@ const SETTLE_TIME := 1.0
 ## How long a fruit must stay above the danger line to end the game.
 const GAME_OVER_TIME := 2.0
 const NEXT_PREVIEW_POS := Vector2(620.0, 125.0)
+## Dropper speed when moved with the keyboard, in pixels per second.
+const KEY_MOVE_SPEED := 700.0
 
 const JAR_COLOR := Color(0.55, 0.38, 0.25)
 const JAR_INSIDE_COLOR := Color(1.0, 0.97, 0.9)
@@ -43,25 +45,38 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if Input.is_action_just_pressed("restart"):
+		_restart()
+		return
 	if is_over:
+		if Input.is_action_just_pressed("drop"):
+			_restart()
 		return
 	cooldown = maxf(cooldown - delta, 0.0)
-	drop_x = get_global_mouse_position().x
+	_handle_keyboard(delta)
 	_check_merges()
 	_check_danger(delta)
 	queue_redraw()
 
 
+func _handle_keyboard(delta: float) -> void:
+	var axis := Input.get_axis("move_left", "move_right")
+	if axis != 0.0:
+		# Start from the clamped position so there's no dead zone after hitting a wall.
+		drop_x = clampf(_clamped_drop_x(current_tier) + axis * KEY_MOVE_SPEED * delta, JAR_LEFT, JAR_RIGHT)
+	if Input.is_action_just_pressed("drop"):
+		_drop()
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		drop_x = get_global_mouse_position().x
 	var mouse := event as InputEventMouseButton
 	if mouse and mouse.button_index == MOUSE_BUTTON_LEFT and not mouse.pressed:
 		if is_over:
 			_restart()
 		else:
 			_drop()
-	var key := event as InputEventKey
-	if key and key.pressed and key.keycode == KEY_R:
-		_restart()
 
 
 func _build_jar() -> void:

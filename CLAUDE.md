@@ -19,6 +19,13 @@ Godot console binary (note: the engine folder itself is named `.exe`):
 - Core loop: `scripts/game.gd` (jar, dropping, merges, danger line), `scripts/fruit.gd` (physics body + drawing), `scripts/fruit_data.gd` (tier table)
 - `docs/`: Obsidian vault (ignored by Godot via `.gdignore`)
 
+## Screen layout
+Viewport 1200×1280 (window opens at 1020×1088). Jar occupies x 20–700 on the left; `UI/AbilityPanel` (x 740–1160) holds ability buttons in `AbilityButtons`.
+
+## Input
+Use the input actions from `project.godot` (`move_left`, `move_right`, `drop`, `restart`), never raw keycodes. Mouse also aims and drops.
+Ability buttons must set `focus_mode = FOCUS_NONE`, or Space/arrow keys will activate and navigate the buttons instead of the game.
+
 ## Conventions
 - GDScript: static typing (`var x: int`, typed function signatures), tabs for indentation, signals for decoupling.
 - Trunk-based: small commits straight to `main`. Every commit must leave the project importing without errors.

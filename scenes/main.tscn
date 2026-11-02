@@ -2,6 +2,22 @@
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(1, 0.97, 0.9, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.55, 0.38, 0.25, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
 
@@ -38,6 +54,45 @@ theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 12
 theme_override_font_sizes/font_size = 44
 text = "GAME OVER
-Click or press R to restart"
+Space, click or R to restart"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="AbilityPanel" type="PanelContainer" parent="UI"]
+offset_left = 740.0
+offset_top = 300.0
+offset_right = 1160.0
+offset_bottom = 1240.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Layout" type="VBoxContainer" parent="UI/AbilityPanel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="UI/AbilityPanel/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 40
+text = "Abilities"
+horizontal_alignment = 1
+
+[node name="AbilityButtons" type="VBoxContainer" parent="UI/AbilityPanel/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="Placeholder" type="Label" parent="UI/AbilityPanel/Layout/AbilityButtons"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 0.5)
+theme_override_font_sizes/font_size = 26
+text = "Coming soon"
+horizontal_alignment = 1
+
+[node name="ControlsHint" type="Label" parent="UI/AbilityPanel/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 0.8)
+theme_override_font_sizes/font_size = 24
+text = "← → / A D   move
+Space / ↓ / S   drop
+R   restart
+Mouse also works"
