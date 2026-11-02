@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="Fruits" type="Node2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ScoreLabel" type="Label" parent="UI"]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 440.0
+offset_bottom = 100.0
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 44
+text = "Score: 0"
+
+[node name="NextLabel" type="Label" parent="UI"]
+offset_left = 560.0
+offset_top = 20.0
+offset_right = 680.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 32
+text = "Next"
+horizontal_alignment = 1
+
+[node name="GameOverLabel" type="Label" parent="UI"]
+visible = false
+offset_top = 560.0
+offset_right = 720.0
+offset_bottom = 760.0
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 44
+text = "GAME OVER
+Click or press R to restart"
+horizontal_alignment = 1
+vertical_alignment = 1

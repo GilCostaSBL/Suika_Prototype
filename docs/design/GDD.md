@@ -38,7 +38,7 @@ Unlocked or bought during a run, each with limited uses.
 - Target platform: desktop only, or also web/mobile (portrait 720×1280 is set up for both)?
 
 ## 4. Milestones
-1. **M1 — Core clone:** drop, merge, score, game over.
+1. **M1 — Core clone:** drop, merge, score, game over. _Implemented 2026-11-02; awaiting playtest._
 2. **M2 — Juice:** sounds, particles, screen shake, combo text.
 3. **M3 — Abilities:** hold slot and swap.
 4. **M4 — Roguelite loop.**

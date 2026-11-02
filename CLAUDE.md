@@ -8,12 +8,15 @@ Godot console binary (note: the engine folder itself is named `.exe`):
 
 - Import / validate the project: `<godot> --headless --path . --import`
 - Check one script for parse errors: `<godot> --headless --path . --check-only --script res://scripts/<file>.gd`
+- Run the smoke test (must pass before every commit): `<godot> --headless --path . -s res://tests/smoke_test.gd`
 - Run the game: `<godot> --path .`
 
 ## Layout
 - `scenes/`: `.tscn` files
 - `scripts/`: `.gd` files, `snake_case.gd`, one class per file, `class_name` in PascalCase
 - `assets/`: art and audio
+- `tests/`: headless `SceneTree` test scripts
+- Core loop: `scripts/game.gd` (jar, dropping, merges, danger line), `scripts/fruit.gd` (physics body + drawing), `scripts/fruit_data.gd` (tier table)
 - `docs/`: Obsidian vault (ignored by Godot via `.gdignore`)
 
 ## Conventions
