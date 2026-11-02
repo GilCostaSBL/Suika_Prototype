@@ -18,6 +18,10 @@ content_margin_top = 24.0
 content_margin_right = 24.0
 content_margin_bottom = 24.0
 
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_divider"]
+color = Color(0.55, 0.38, 0.25, 0.6)
+thickness = 3
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
 
@@ -88,8 +92,13 @@ theme_override_font_sizes/font_size = 26
 text = "Coming soon"
 horizontal_alignment = 1
 
+[node name="Divider" type="HSeparator" parent="UI/AbilityPanel/Layout"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_divider")
+
 [node name="ControlsHint" type="Label" parent="UI/AbilityPanel/Layout"]
 layout_mode = 2
+horizontal_alignment = 1
 theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 0.8)
 theme_override_font_sizes/font_size = 24
 text = "← → / A D   move
