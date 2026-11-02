@@ -18,6 +18,7 @@ Godot console binary (note: the engine folder itself is named `.exe`):
 - `tests/`: headless `SceneTree` test scripts
 - Core loop: `scripts/game.gd` (jar, fruit queue, merges, danger line, coins, abilities), `scripts/fruit.gd` (physics body + drawing), `scripts/fruit_data.gd` (tier table)
 - Abilities: `scripts/shake_up.gd` (ultimate; rotates the view and gravity, see docs/decisions/0002), `scripts/ability_panel.gd` + `scripts/fruit_icon.gd` (panel UI)
+- Help: `scripts/help_overlay.gd` ("?" button + How to Play screen on CanvasLayer 10, `PROCESS_MODE_ALWAYS`; opening it sets `get_tree().paused`). Its text reads costs from the balance config, so keep wording generic when numbers change.
 - Tuning: `config/balance.tres` (`scripts/balance.gd`). Put new tunable numbers here, not in constants.
 - `docs/`: Obsidian vault (ignored by Godot via `.gdignore`)
 

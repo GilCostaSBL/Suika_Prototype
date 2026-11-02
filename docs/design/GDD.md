@@ -19,6 +19,7 @@ Drop fruit from the top of a jar. Two identical fruits that touch merge into the
 - **Bounce:** scales by size, from 0.2 (cherry) to 0.05 (watermelon).
 - **Merge pop:** a fresh merge pushes nearby fruit outward (180 px/s at contact, fading with distance).
 - **Testing:** F1 grants 10 coins in debug builds only.
+- **Help:** round "?" button (top right) or H opens a How to Play screen that pauses the game: objective, controls, coins and abilities, and a table of all 11 fruits. Back, H or Esc closes it.
 
 ## 2. Abilities and economy (implemented)
 All numbers live in `config/balance.tres` (edit in the Godot inspector).

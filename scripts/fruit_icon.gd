@@ -7,15 +7,18 @@ var tier: int = -1:
 	set(value):
 		tier = value
 		queue_redraw()
+## Draw the rounded slot box behind the fruit.
+var show_box: bool = true
 
 
 func _draw() -> void:
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color(0.55, 0.38, 0.25, 0.12)
-	box.border_color = Color(0.55, 0.38, 0.25, 0.6)
-	box.set_border_width_all(3)
-	box.set_corner_radius_all(12)
-	draw_style_box(box, Rect2(Vector2.ZERO, size))
+	if show_box:
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color(0.55, 0.38, 0.25, 0.12)
+		box.border_color = Color(0.55, 0.38, 0.25, 0.6)
+		box.set_border_width_all(3)
+		box.set_corner_radius_all(12)
+		draw_style_box(box, Rect2(Vector2.ZERO, size))
 	if tier < 0:
 		return
 	var fit := (minf(size.x, size.y) / 2.0 - 8.0) / FruitData.radius(tier)

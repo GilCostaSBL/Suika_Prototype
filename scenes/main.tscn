@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/shake_up.gd" id="2_shake"]
 [ext_resource type="Script" path="res://scripts/ability_panel.gd" id="3_panel"]
+[ext_resource type="Script" path="res://scripts/help_overlay.gd" id="4_help"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 0.97, 0.9, 1)
@@ -111,5 +112,8 @@ theme_override_font_sizes/font_size = 24
 text = "← → / A D   move
 Space / ↓ / S   drop
 1 2 3   abilities
-R   restart
+R   restart      H   help
 Mouse also works"
+
+[node name="Help" type="CanvasLayer" parent="."]
+script = ExtResource("4_help")

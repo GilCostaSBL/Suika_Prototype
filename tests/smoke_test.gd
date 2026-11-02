@@ -126,6 +126,19 @@ func _run() -> void:
 	Input.action_release("debug_coins")
 	_expect(main.coins == coins_before + main.balance.debug_coin_grant, "F1 grants debug coins (%d -> %d)" % [coins_before, main.coins])
 
+	# Help screen pauses the game and lists every fruit.
+	var help: HelpOverlay = main.get_node("Help")
+	main._spawn_fruit(0, Vector2(500, 400))
+	help.open()
+	var before := _mean_fruit_pos(main)
+	await _wait_physics(30)
+	_expect(main.get_tree().paused, "help pauses the game")
+	_expect(_mean_fruit_pos(main).is_equal_approx(before), "fruit is frozen while help is open")
+	_expect(help.fruit_grid.get_child_count() == FruitData.count(), "help lists all %d fruits" % FruitData.count())
+	help.close()
+	_expect(not main.get_tree().paused, "closing help resumes the game")
+	await _wait_physics(240)
+
 	# A settled fruit held above the danger line ends the game.
 	var stuck: Fruit = main._spawn_fruit(0, Vector2(120, 330))
 	stuck.freeze = true
