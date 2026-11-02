@@ -68,6 +68,8 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("restart"):
 		_restart()
 		return
+	if Input.is_action_just_pressed("debug_coins") and OS.is_debug_build():
+		grant_debug_coins()
 	if is_over:
 		if Input.is_action_just_pressed("drop"):
 			_restart()
@@ -155,6 +157,8 @@ func _spawn_fruit(tier: int, pos: Vector2) -> Fruit:
 	var fruit := Fruit.new()
 	fruit.tier = tier
 	fruit.position = pos
+	var size_t := float(tier) / (FruitData.count() - 1)
+	fruit.bounce = lerpf(balance.bounce_smallest, balance.bounce_largest, size_t)
 	fruits.add_child(fruit)
 	shake_up.prepare_fruit(fruit)
 	return fruit
@@ -181,8 +185,32 @@ func _merge(a: Fruit, b: Fruit) -> void:
 	b.queue_free()
 	# Two watermelons simply vanish.
 	if tier + 1 < FruitData.count():
-		_spawn_fruit.call_deferred(tier + 1, pos)
+		_spawn_merged.call_deferred(tier + 1, pos)
 	_add_score(FruitData.merge_score(tier))
+
+
+func _spawn_merged(tier: int, pos: Vector2) -> void:
+	var fruit := _spawn_fruit(tier, pos)
+	pop_neighbors(fruit)
+
+
+## Pushes fruit near a fresh merge outward, stronger the closer they are.
+func pop_neighbors(source: Fruit) -> void:
+	if balance.merge_pop_speed <= 0.0:
+		return
+	var source_radius := FruitData.radius(source.tier)
+	for child in fruits.get_children():
+		var fruit := child as Fruit
+		if fruit == null or fruit == source or fruit.merging:
+			continue
+		var offset := fruit.global_position - source.global_position
+		var reach := (source_radius + FruitData.radius(fruit.tier)) * balance.merge_pop_range
+		var distance := offset.length()
+		if distance >= reach or distance < 0.001:
+			continue
+		var strength := 1.0 - distance / reach
+		fruit.sleeping = false
+		fruit.apply_central_impulse(offset / distance * balance.merge_pop_speed * strength * fruit.mass)
 
 
 func _add_score(points: int) -> void:
@@ -192,6 +220,13 @@ func _add_score(points: int) -> void:
 	if earned > coins_awarded:
 		coins += earned - coins_awarded
 		coins_awarded = earned
+	_update_ui()
+
+
+## Testing helper (F1). The caller checks OS.is_debug_build(), so release exports ignore the key.
+func grant_debug_coins() -> void:
+	coins += balance.debug_coin_grant
+	print("[debug] +%d coins (now %d)" % [balance.debug_coin_grant, coins])
 	_update_ui()
 
 

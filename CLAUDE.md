@@ -25,7 +25,8 @@ Godot console binary (note: the engine folder itself is named `.exe`):
 Viewport 1200×1280 (window opens at 1020×1088). Jar occupies x 20–700 on the left; `UI/AbilityPanel` (x 740–1160) holds ability buttons in `AbilityButtons`.
 
 ## Input
-Use the input actions from `project.godot` (`move_left`, `move_right`, `drop`, `restart`), never raw keycodes. Mouse also aims and drops.
+Use the input actions from `project.godot` (`move_left`, `move_right`, `drop`, `ability_1..3`, `restart`, `debug_coins`), never raw keycodes. Mouse also aims and drops.
+Debug-only actions (like `debug_coins`, F1) must be gated by `OS.is_debug_build()` so release exports ignore them.
 Ability buttons must set `focus_mode = FOCUS_NONE`, or Space/arrow keys will activate and navigate the buttons instead of the game.
 
 ## Conventions

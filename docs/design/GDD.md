@@ -15,6 +15,10 @@ Drop fruit from the top of a jar. Two identical fruits that touch merge into the
 - **Controls:** ←/→ or A/D move the dropper, Space/↓/S drop, 1/2/3 abilities, R restart; mouse aim + click also works.
 - **Layout:** jar on the left, abilities panel on the right.
 - **Physics:** `RigidBody2D` circles inside a `StaticBody2D` jar; merges are detected by polling contacts between equal tiers.
+- **Weight:** mass grows with area (`r² / 400`): cherry 1.2 → watermelon 64.
+- **Bounce:** scales by size, from 0.2 (cherry) to 0.05 (watermelon).
+- **Merge pop:** a fresh merge pushes nearby fruit outward (180 px/s at contact, fading with distance).
+- **Testing:** F1 grants 10 coins in debug builds only.
 
 ## 2. Abilities and economy (implemented)
 All numbers live in `config/balance.tres` (edit in the Godot inspector).

@@ -44,6 +44,27 @@ func _run() -> void:
 	_expect(_tiers(main).size() == count_before + 1, "drop action spawns a fruit")
 	await _wait_physics(240)
 
+	# Bounce scales from small (bouncy) to large (dull).
+	var cherry: Fruit = main._spawn_fruit(0, Vector2(200, 500))
+	var melon: Fruit = main._spawn_fruit(10, Vector2(400, 500))
+	_expect(is_equal_approx(cherry.physics_material_override.bounce, main.balance.bounce_smallest), "cherry uses bounce_smallest")
+	_expect(is_equal_approx(melon.physics_material_override.bounce, main.balance.bounce_largest), "watermelon uses bounce_largest")
+	cherry.queue_free()
+	melon.queue_free()
+	await physics_frame
+
+	# Merge pop: a close neighbour is pushed away, a far one is not.
+	var source: Fruit = main._spawn_fruit(1, Vector2(200, 500))
+	var near: Fruit = main._spawn_fruit(0, Vector2(260, 500))
+	var far: Fruit = main._spawn_fruit(0, Vector2(560, 500))
+	main.pop_neighbors(source)
+	await physics_frame
+	_expect(near.linear_velocity.x > 20.0, "merge pop pushes a close fruit away (vx %.0f)" % near.linear_velocity.x)
+	_expect(absf(far.linear_velocity.x) < 1.0, "merge pop leaves far fruit alone (vx %.1f)" % far.linear_velocity.x)
+	for f in [source, near, far]:
+		f.queue_free()
+	await physics_frame
+
 	# Coins: one per points_per_coin (50) passed.
 	main._add_score(300 - main.score)
 	_expect(main.coins == 6, "300 points gives 6 coins (got %d)" % main.coins)
@@ -97,6 +118,13 @@ func _run() -> void:
 			escaped += 1
 	_expect(escaped == 0, "no fruit escaped the jar (%d out)" % escaped)
 	_expect(not main.is_over, "shake up didn't end the game")
+
+	# Debug key grants coins (the editor binary is a debug build).
+	var coins_before: int = main.coins
+	Input.action_press("debug_coins")
+	await _wait_physics(2)
+	Input.action_release("debug_coins")
+	_expect(main.coins == coins_before + main.balance.debug_coin_grant, "F1 grants debug coins (%d -> %d)" % [coins_before, main.coins])
 
 	# A settled fruit held above the danger line ends the game.
 	var stuck: Fruit = main._spawn_fruit(0, Vector2(120, 330))

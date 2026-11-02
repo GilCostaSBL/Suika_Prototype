@@ -4,6 +4,8 @@ extends RigidBody2D
 ## A single physics fruit. The game script detects merges via get_colliding_bodies().
 
 var tier: int = 0
+## Set by the game from the balance config before the fruit enters the tree.
+var bounce: float = 0.05
 ## Set once this fruit is consumed by a merge, so it can't merge twice.
 var merging: bool = false
 ## Seconds since spawn; young fruits don't count toward game over.
@@ -21,7 +23,7 @@ func _ready() -> void:
 	mass = r * r / 400.0
 	var material := PhysicsMaterial.new()
 	material.friction = 0.4
-	material.bounce = 0.05
+	material.bounce = bounce
 	physics_material_override = material
 	# Shake Up boosts gravity; continuous collision keeps fast small fruit from tunnelling.
 	continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE

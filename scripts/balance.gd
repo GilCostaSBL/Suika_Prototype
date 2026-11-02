@@ -4,9 +4,22 @@ extends Resource
 ## Tunable numbers for the run economy and abilities.
 ## Edit res://config/balance.tres in the inspector to tune without touching code.
 
+@export_group("Fruit physics")
+## Bounce of the smallest fruit (cherry). Bounce scales linearly to the largest fruit's value.
+@export_range(0.0, 1.0) var bounce_smallest: float = 0.2
+## Bounce of the largest fruit (watermelon).
+@export_range(0.0, 1.0) var bounce_largest: float = 0.05
+## Speed (px/s) a neighbour touching a fresh merge is pushed away with. 0 disables the pop.
+@export var merge_pop_speed: float = 180.0
+## How far the pop reaches, as a multiple of (new fruit radius + neighbour radius).
+@export var merge_pop_range: float = 1.4
+
 @export_group("Economy")
 ## A coin is awarded each time the score passes a multiple of this.
 @export var points_per_coin: int = 50
+
+## Coins granted by the debug key (F1). Only works in debug builds (editor / debug exports).
+@export var debug_coin_grant: int = 10
 
 @export_group("Ability costs")
 ## Fruit Slot: stash the current fruit, release it later for free.

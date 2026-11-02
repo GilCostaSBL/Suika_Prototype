@@ -4,7 +4,12 @@
 
 [resource]
 script = ExtResource("1_balance")
+bounce_smallest = 0.2
+bounce_largest = 0.05
+merge_pop_speed = 180.0
+merge_pop_range = 1.4
 points_per_coin = 50
+debug_coin_grant = 10
 slot_cost = 5
 swap_cost = 10
 shake_cost = 25
