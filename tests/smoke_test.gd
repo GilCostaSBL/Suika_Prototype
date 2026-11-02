@@ -44,6 +44,59 @@ func _run() -> void:
 	_expect(_tiers(main).size() == count_before + 1, "drop action spawns a fruit")
 	await _wait_physics(240)
 
+	# Coins: one per points_per_coin (50) passed.
+	main._add_score(300 - main.score)
+	_expect(main.coins == 6, "300 points gives 6 coins (got %d)" % main.coins)
+
+	# Fruit Slot: pay to stash the current fruit, release it for free.
+	var cur: int = main.current_tier
+	var nxt: int = main.next_tier
+	_expect(main.activate_ability(0), "slot stores the current fruit")
+	_expect(main.held_tier == cur and main.current_tier == nxt, "held fruit is stored and queue advances")
+	_expect(main.coins == 1, "slot costs 5 (coins %d)" % main.coins)
+	_expect(main.activate_ability(0), "slot releases the stored fruit")
+	_expect(main.held_tier == -1 and main.current_tier == cur and main.next_tier == nxt, "released fruit is back in the dropper")
+	_expect(main.coins == 1, "release is free (coins %d)" % main.coins)
+
+	# Fruit Swap: refuses without coins, otherwise rerolls the next fruit.
+	_expect(not main.activate_ability(1), "swap refused with 1 coin")
+	main._add_score(1000 - main.score)
+	var old_next: int = main.next_tier
+	_expect(main.activate_ability(1), "swap fires with enough coins")
+	_expect(main.next_tier != old_next, "swap changes the next fruit (%d -> %d)" % [old_next, main.next_tier])
+	_expect(main.coins == 5, "swap costs 10 (coins %d)" % main.coins)
+
+	# Shake Up: everything stays inside the jar and the world is restored afterwards.
+	for i in 6:
+		main._spawn_fruit(i % 5, Vector2(120 + i * 90, 900))
+	await _wait_physics(120)
+	main._add_score(2500 - main.score)
+	_expect(main.activate_ability(2), "shake up fires with 35 coins")
+	_expect(not main.activate_ability(0), "abilities locked during shake up")
+	# Near the end of the first pause the jar is upside down: fruit should have fallen to the old top.
+	var b: Balance = main.balance
+	var first_flip_end := b.shake_cover_time + b.shake_zoom_time + b.shake_flip_time + b.shake_flip_pause * 0.9
+	var frames := int(first_flip_end * 120)
+	await _wait_physics(frames)
+	var mean_y := _mean_fruit_y(main)
+	_expect(mean_y < 750.0, "fruit falls to the new bottom after a flip (mean y %.0f, jar center 750)" % mean_y)
+	while main.shake_up.active and frames < 2000:
+		await physics_frame
+		frames += 1
+	_expect(not main.shake_up.active, "shake up finishes (%.1f s)" % (frames / 120.0))
+	var space: RID = main.get_world_2d().space
+	var gravity: Vector2 = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR)
+	_expect(gravity.is_equal_approx(Vector2.DOWN), "gravity restored (got %s)" % gravity)
+	var strength: float = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY)
+	_expect(is_equal_approx(strength, 980.0), "gravity strength restored (got %.0f)" % strength)
+	_expect(main.get_viewport().canvas_transform == Transform2D.IDENTITY, "view restored")
+	var escaped := 0
+	for child in main.get_node("Fruits").get_children():
+		if child is Fruit and not Rect2(55, 250, 610, 960).has_point(child.global_position):
+			escaped += 1
+	_expect(escaped == 0, "no fruit escaped the jar (%d out)" % escaped)
+	_expect(not main.is_over, "shake up didn't end the game")
+
 	# A settled fruit held above the danger line ends the game.
 	var stuck: Fruit = main._spawn_fruit(0, Vector2(120, 330))
 	stuck.freeze = true
@@ -72,6 +125,16 @@ func _tiers(main: Node) -> Array:
 			result.append(child.tier)
 	result.sort()
 	return result
+
+
+func _mean_fruit_y(main: Node) -> float:
+	var total := 0.0
+	var count := 0
+	for child in main.get_node("Fruits").get_children():
+		if child is Fruit and not child.is_queued_for_deletion():
+			total += child.global_position.y
+			count += 1
+	return total / maxi(count, 1)
 
 
 func _expect(ok: bool, message: String) -> void:

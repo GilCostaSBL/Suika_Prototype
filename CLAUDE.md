@@ -16,7 +16,9 @@ Godot console binary (note: the engine folder itself is named `.exe`):
 - `scripts/`: `.gd` files, `snake_case.gd`, one class per file, `class_name` in PascalCase
 - `assets/`: art and audio
 - `tests/`: headless `SceneTree` test scripts
-- Core loop: `scripts/game.gd` (jar, dropping, merges, danger line), `scripts/fruit.gd` (physics body + drawing), `scripts/fruit_data.gd` (tier table)
+- Core loop: `scripts/game.gd` (jar, fruit queue, merges, danger line, coins, abilities), `scripts/fruit.gd` (physics body + drawing), `scripts/fruit_data.gd` (tier table)
+- Abilities: `scripts/shake_up.gd` (ultimate; rotates the view and gravity, see docs/decisions/0002), `scripts/ability_panel.gd` + `scripts/fruit_icon.gd` (panel UI)
+- Tuning: `config/balance.tres` (`scripts/balance.gd`). Put new tunable numbers here, not in constants.
 - `docs/`: Obsidian vault (ignored by Godot via `.gdignore`)
 
 ## Screen layout
@@ -30,6 +32,10 @@ Ability buttons must set `focus_mode = FOCUS_NONE`, or Space/arrow keys will act
 - GDScript: static typing (`var x: int`, typed function signatures), tabs for indentation, signals for decoupling.
 - Trunk-based: small commits straight to `main`. Every commit must leave the project importing without errors.
 - Commit messages: imperative mood, `area: summary` (e.g. `merge: award score on fruit merge`).
+
+## Visual checks
+Headless runs can't render. To see the game, render frames with a scratch driver script outside the repo:
+`<godot> --path . -s <driver>.gd --write-movie <dir>/f.png --fixed-fps 60`, then read the PNGs. Tests that only check "nothing broke" can miss behaviour that looks wrong, so assert the intended effect too.
 
 ## Docs duties
 - At the end of a working session, add or update `docs/devlog/YYYY-MM-DD.md` from `docs/templates/devlog.md`, including the **Claude Code observations** section.

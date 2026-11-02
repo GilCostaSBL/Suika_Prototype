@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/shake_up.gd" id="2_shake"]
+[ext_resource type="Script" path="res://scripts/ability_panel.gd" id="3_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 0.97, 0.9, 1)
@@ -26,6 +28,9 @@ thickness = 3
 script = ExtResource("1_game")
 
 [node name="Fruits" type="Node2D" parent="."]
+
+[node name="ShakeUp" type="Node2D" parent="."]
+script = ExtResource("2_shake")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -68,6 +73,7 @@ offset_top = 300.0
 offset_right = 1160.0
 offset_bottom = 1240.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("3_panel")
 
 [node name="Layout" type="VBoxContainer" parent="UI/AbilityPanel"]
 layout_mode = 2
@@ -80,17 +86,18 @@ theme_override_font_sizes/font_size = 40
 text = "Abilities"
 horizontal_alignment = 1
 
+[node name="CoinsLabel" type="Label" parent="UI/AbilityPanel/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 30
+text = "Coins: 0
+next coin at 50 pts"
+horizontal_alignment = 1
+
 [node name="AbilityButtons" type="VBoxContainer" parent="UI/AbilityPanel/Layout"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
-
-[node name="Placeholder" type="Label" parent="UI/AbilityPanel/Layout/AbilityButtons"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 0.5)
-theme_override_font_sizes/font_size = 26
-text = "Coming soon"
-horizontal_alignment = 1
 
 [node name="Divider" type="HSeparator" parent="UI/AbilityPanel/Layout"]
 layout_mode = 2
@@ -103,5 +110,6 @@ theme_override_colors/font_color = Color(0.3, 0.2, 0.12, 0.8)
 theme_override_font_sizes/font_size = 24
 text = "← → / A D   move
 Space / ↓ / S   drop
+1 2 3   abilities
 R   restart
 Mouse also works"

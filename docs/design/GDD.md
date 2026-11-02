@@ -12,36 +12,46 @@ Drop fruit from the top of a jar. Two identical fruits that touch merge into the
 - **Spawn pool:** only the 5 smallest tiers can be dropped.
 - **Next preview:** show the next fruit.
 - **Scoring:** merging tier *n* awards a triangular-number score (1, 3, 6, 10, …). Two watermelons merging vanish.
-- **Controls:** ←/→ or A/D move the dropper, Space/↓/S drop, R restart; mouse aim + click also works.
-- **Layout:** jar on the left, abilities panel on the right (buttons defined later).
-- **Physics:** `RigidBody2D` circles inside a `StaticBody2D` jar; merge on `body_entered` between equal tiers.
+- **Controls:** ←/→ or A/D move the dropper, Space/↓/S drop, 1/2/3 abilities, R restart; mouse aim + click also works.
+- **Layout:** jar on the left, abilities panel on the right.
+- **Physics:** `RigidBody2D` circles inside a `StaticBody2D` jar; merges are detected by polling contacts between equal tiers.
 
-## 2. Twists (backlog, to be narrowed down)
+## 2. Abilities and economy (implemented)
+All numbers live in `config/balance.tres` (edit in the Godot inspector).
 
-### Gated player abilities
-Unlocked or bought during a run, each with limited uses.
-- **Hold slot:** store the current fruit and swap it in later (like Tetris hold).
-- **Purchasable swap:** spend currency to reroll the *next* fruit.
-- _Ideas:_ shake the jar, pop a single fruit, slow-motion drop.
+- **Coins:** 1 coin each time the score passes a multiple of 50.
+- **Per run:** coins and abilities reset on restart; nothing carries over.
+- **Paid per use:** each press spends the cost; there is no separate "buy then use" step.
+
+| # | Ability | Cost | Effect |
+|---|---|---|---|
+| 1 | **Fruit Slot** | 5 | Stash the fruit in the dropper; the queue moves on. Pressing again (free) puts the stashed fruit back in the dropper. One stash per payment. |
+| 2 | **Fruit Swap** | 10 | Reroll the *next* fruit into a different one. |
+| 3 | **Shake Up** (ultimate) | 25 | No drops allowed; a cover slides over the jar, the view zooms out, and the jar flips 180° four times around its center. Fruit tumbles (and can merge) under boosted gravity. Afterwards every fruit gets a fresh settle grace before it can cause game over. Takes ~7 s. |
+
+Abilities are disabled while a Shake Up runs and after game over. See [decision 0002](../decisions/0002-shake-up-rotates-the-view.md) for how the flip is done.
+
+## 3. Twists backlog
 
 ### Gameplay modifiers
 - Bomb fruit (clears the area around it), wildcard (merges with anything), ice block (needs two hits), gravity flip.
 
 ### Roguelite runs
-- A run is a series of rounds with score targets. Between rounds, pick 1 of 3 upgrades: wider jar, longer preview, score multiplier, extra hold slot.
-- The currency earned from merges pays for abilities (see above).
+- A run is a series of rounds with score targets. Between rounds, pick 1 of 3 upgrades: wider jar, longer preview, score multiplier, cheaper abilities.
 
 ### Modes
 - Classic, Timed, Daily seeded challenge, Endless with a rising danger line.
 
-## 3. Open questions
-- Which currency drives purchases: score, or a separate coin dropped by merges?
-- Do abilities carry between runs (meta-progression) or stay within one run?
-- Target platform: desktop only, or also web/mobile (portrait 720×1280 is set up for both)?
+### More ability ideas
+- Pop a single fruit, slow-motion drop.
 
-## 4. Milestones
-1. **M1 — Core clone:** drop, merge, score, game over. _Implemented 2026-11-02; awaiting playtest._
-2. **M2 — Juice:** sounds, particles, screen shake, combo text.
-3. **M3 — Abilities:** hold slot and swap.
+## 4. Open questions
+- Should coin milestones scale (e.g. 50, 100, 200…) instead of a flat 50?
+- Target platform: desktop only, or also web/mobile?
+
+## 5. Milestones
+1. **M1 — Core clone:** drop, merge, score, game over. _Done 2026-11-02._
+2. **M2 — Abilities:** coins, Fruit Slot, Fruit Swap, Shake Up. _Implemented 2026-11-02; awaiting playtest._
+3. **M3 — Juice:** sounds, particles, screen shake, combo text.
 4. **M4 — Roguelite loop.**
 5. **M5 — Modes.**

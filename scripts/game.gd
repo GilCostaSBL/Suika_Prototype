@@ -1,6 +1,8 @@
 extends Node2D
 
-## Core Suika loop: drop, merge, score, game over.
+## Core Suika loop: drop, merge, score, game over, plus the per-run coin economy and abilities.
+
+enum Ability { SLOT, SWAP, SHAKE }
 
 const JAR_LEFT := 60.0
 const JAR_RIGHT := 660.0
@@ -22,25 +24,43 @@ const JAR_COLOR := Color(0.55, 0.38, 0.25)
 const JAR_INSIDE_COLOR := Color(1.0, 0.97, 0.9)
 const DANGER_COLOR := Color(0.85, 0.15, 0.15)
 
+@export var balance: Balance = preload("res://config/balance.tres")
+
 @onready var fruits: Node2D = $Fruits
+@onready var shake_up: ShakeUp = $ShakeUp
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var game_over_label: Label = $UI/GameOverLabel
+@onready var ability_panel: AbilityPanel = $UI/AbilityPanel
 
 var score: int = 0
-var current_tier: int = 0
-var next_tier: int = 0
+var coins: int = 0
+## Total coins handed out this run, so each score milestone pays exactly once.
+var coins_awarded: int = 0
+## Tier stored by the Fruit Slot, or -1 when the slot is empty.
+var held_tier: int = -1
+## Upcoming fruits: [0] is in the dropper, [1] is the "Next" preview.
+var queue: Array[int] = []
 var drop_x: float = (JAR_LEFT + JAR_RIGHT) / 2.0
 var cooldown: float = 0.0
 var danger_timer: float = 0.0
 var is_over: bool = false
 var rng := RandomNumberGenerator.new()
 
+var current_tier: int:
+	get:
+		return queue[0]
+var next_tier: int:
+	get:
+		return queue[1]
+
 
 func _ready() -> void:
 	rng.randomize()
 	_build_jar()
-	current_tier = _roll_tier()
-	next_tier = _roll_tier()
+	_fill_queue()
+	shake_up.setup(balance, Rect2(JAR_LEFT, JAR_TOP, JAR_RIGHT - JAR_LEFT, JAR_BOTTOM - JAR_TOP), WALL_THICKNESS, JAR_COLOR, fruits)
+	shake_up.finished.connect(_on_shake_finished)
+	ability_panel.ability_pressed.connect(activate_ability)
 	_update_ui()
 
 
@@ -53,9 +73,10 @@ func _physics_process(delta: float) -> void:
 			_restart()
 		return
 	cooldown = maxf(cooldown - delta, 0.0)
-	_handle_keyboard(delta)
 	_check_merges()
-	_check_danger(delta)
+	if not shake_up.active:
+		_handle_keyboard(delta)
+		_check_danger(delta)
 	queue_redraw()
 
 
@@ -66,6 +87,9 @@ func _handle_keyboard(delta: float) -> void:
 		drop_x = clampf(_clamped_drop_x(current_tier) + axis * KEY_MOVE_SPEED * delta, JAR_LEFT, JAR_RIGHT)
 	if Input.is_action_just_pressed("drop"):
 		_drop()
+	for id in Ability.values():
+		if Input.is_action_just_pressed("ability_%d" % (id + 1)):
+			activate_ability(id)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -103,13 +127,23 @@ func _roll_tier() -> int:
 	return rng.randi_range(0, FruitData.SPAWN_TIER_MAX)
 
 
+func _fill_queue() -> void:
+	while queue.size() < 2:
+		queue.append(_roll_tier())
+
+
+func _advance_queue() -> void:
+	queue.pop_front()
+	_fill_queue()
+
+
 func _drop() -> void:
-	if cooldown > 0.0:
+	if cooldown > 0.0 or shake_up.active:
 		return
 	_spawn_fruit(current_tier, Vector2(_clamped_drop_x(current_tier), DROP_Y))
-	current_tier = next_tier
-	next_tier = _roll_tier()
+	_advance_queue()
 	cooldown = DROP_COOLDOWN
+	_update_ui()
 
 
 func _clamped_drop_x(tier: int) -> float:
@@ -121,6 +155,8 @@ func _spawn_fruit(tier: int, pos: Vector2) -> Fruit:
 	var fruit := Fruit.new()
 	fruit.tier = tier
 	fruit.position = pos
+	# Fruit born mid-shake must not fall asleep while gravity is rotating.
+	fruit.can_sleep = not shake_up.active
 	fruits.add_child(fruit)
 	return fruit
 
@@ -142,12 +178,71 @@ func _merge(a: Fruit, b: Fruit) -> void:
 	b.merging = true
 	var tier := a.tier
 	var pos := (a.global_position + b.global_position) / 2.0
-	score += FruitData.merge_score(tier)
 	a.queue_free()
 	b.queue_free()
 	# Two watermelons simply vanish.
 	if tier + 1 < FruitData.count():
 		_spawn_fruit.call_deferred(tier + 1, pos)
+	_add_score(FruitData.merge_score(tier))
+
+
+func _add_score(points: int) -> void:
+	score += points
+	@warning_ignore("integer_division")
+	var earned := score / balance.points_per_coin
+	if earned > coins_awarded:
+		coins += earned - coins_awarded
+		coins_awarded = earned
+	_update_ui()
+
+
+func ability_cost(id: int) -> int:
+	match id:
+		Ability.SLOT:
+			return balance.slot_cost
+		Ability.SWAP:
+			return balance.swap_cost
+		_:
+			return balance.shake_cost
+
+
+## Returns true if the ability fired. Abilities are paid per use and reset with the run.
+func activate_ability(id: int) -> bool:
+	if is_over or shake_up.active:
+		return false
+	if id == Ability.SLOT and held_tier >= 0:
+		# Releasing the stored fruit is free: it goes back into the dropper.
+		queue.push_front(held_tier)
+		held_tier = -1
+		_update_ui()
+		return true
+	if coins < ability_cost(id):
+		return false
+	coins -= ability_cost(id)
+	match id:
+		Ability.SLOT:
+			held_tier = current_tier
+			_advance_queue()
+		Ability.SWAP:
+			queue[1] = _roll_tier_except(queue[1])
+		Ability.SHAKE:
+			shake_up.start()
+	_update_ui()
+	return true
+
+
+func _roll_tier_except(tier: int) -> int:
+	var roll := rng.randi_range(0, FruitData.SPAWN_TIER_MAX - 1)
+	return roll + 1 if roll >= tier else roll
+
+
+func _on_shake_finished() -> void:
+	# Everything just got tossed around: give all fruit a fresh settle grace.
+	for child in fruits.get_children():
+		var fruit := child as Fruit
+		if fruit:
+			fruit.age = 0.0
+	danger_timer = 0.0
 	_update_ui()
 
 
@@ -170,6 +265,7 @@ func _game_over() -> void:
 		if fruit:
 			fruit.freeze = true
 	game_over_label.visible = true
+	_update_ui()
 	queue_redraw()
 
 
@@ -179,6 +275,11 @@ func _restart() -> void:
 
 func _update_ui() -> void:
 	score_label.text = "Score: %d" % score
+	var costs: Array[int] = []
+	for id in Ability.values():
+		costs.append(ability_cost(id))
+	var next_coin_at := (coins_awarded + 1) * balance.points_per_coin
+	ability_panel.refresh(coins, next_coin_at, costs, held_tier, is_over or shake_up.active)
 
 
 func _draw() -> void:
@@ -192,10 +293,10 @@ func _draw() -> void:
 	danger.a = 0.35 + 0.65 * clampf(danger_timer / GAME_OVER_TIME, 0.0, 1.0)
 	draw_dashed_line(Vector2(JAR_LEFT, DANGER_Y), Vector2(JAR_RIGHT, DANGER_Y), danger, 3.0, 14.0)
 
-	Fruit.draw_fruit(self, NEXT_PREVIEW_POS, next_tier)
-
-	if is_over:
+	# The dropper and preview live outside the jar, so hide them while the view spins.
+	if is_over or shake_up.active:
 		return
+	Fruit.draw_fruit(self, NEXT_PREVIEW_POS, next_tier)
 	var x := _clamped_drop_x(current_tier)
 	draw_line(Vector2(x, DROP_Y), Vector2(x, JAR_BOTTOM), Color(0, 0, 0, 0.12), 2.0)
 	var alpha := 1.0 if cooldown <= 0.0 else 0.4

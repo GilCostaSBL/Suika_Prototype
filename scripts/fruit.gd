@@ -23,6 +23,8 @@ func _ready() -> void:
 	material.friction = 0.4
 	material.bounce = 0.05
 	physics_material_override = material
+	# Shake Up boosts gravity; continuous collision keeps fast small fruit from tunnelling.
+	continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
 	contact_monitor = true
 	max_contacts_reported = 8
 
