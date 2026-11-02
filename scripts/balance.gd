@@ -22,13 +22,21 @@ extends Resource
 ## Jar scale while spinning, so the whole jar stays on the left of the screen. 1.0 disables the zoom.
 @export_range(0.3, 1.0) var shake_zoom: float = 0.6
 @export var shake_zoom_time: float = 0.3
-@export var shake_flips: int = 4
-@export var shake_flip_degrees: float = 180.0
-## Seconds per flip.
+## The jar turns a full 360° split into this many equal turns (4 = 90° each).
+@export_range(1, 12) var shake_flips: int = 4
+## Seconds per turn.
 @export var shake_flip_time: float = 0.7
-## Pause between flips so the fruit can fall to the new bottom.
-@export var shake_flip_pause: float = 0.6
-## Gravity multiplier while shaking, so fruit crosses the jar within the pause.
+## After each turn, wait until the average fruit speed drops below this (pixels/s)...
+@export var shake_settle_speed: float = 50.0
+## ...but always wait at least this long...
+@export var shake_settle_min: float = 0.25
+## ...and never longer than this, in case something keeps rolling.
+@export var shake_settle_max: float = 1.5
+## Gravity multiplier while shaking, so fruit settles quickly after each turn.
 @export var shake_gravity_scale: float = 2.5
+## Extra fruit damping while shaking. Circles don't have rolling resistance, so without this
+## fruit keeps rolling and every settle runs to shake_settle_max.
+@export var shake_linear_damp: float = 1.5
+@export var shake_angular_damp: float = 4.0
 ## Extra no-drop time once the jar is back and open.
 @export var shake_extra_pause: float = 0.5

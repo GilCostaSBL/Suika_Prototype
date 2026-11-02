@@ -73,17 +73,18 @@ func _run() -> void:
 	main._add_score(2500 - main.score)
 	_expect(main.activate_ability(2), "shake up fires with 35 coins")
 	_expect(not main.activate_ability(0), "abilities locked during shake up")
-	# Near the end of the first pause the jar is upside down: fruit should have fallen to the old top.
-	var b: Balance = main.balance
-	var first_flip_end := b.shake_cover_time + b.shake_zoom_time + b.shake_flip_time + b.shake_flip_pause * 0.9
-	var frames := int(first_flip_end * 120)
-	await _wait_physics(frames)
-	var mean_y := _mean_fruit_y(main)
-	_expect(mean_y < 750.0, "fruit falls to the new bottom after a flip (mean y %.0f, jar center 750)" % mean_y)
-	while main.shake_up.active and frames < 2000:
+	# After the first 90° turn the old right wall is the floor: fruit should have settled against it.
+	var frames := 0
+	while main.shake_up.flips_done < 1 and frames < 1000:
+		await physics_frame
+		frames += 1
+	var mean_x := _mean_fruit_pos(main).x
+	_expect(mean_x > 450.0, "fruit settles on the new floor after a 90° turn (mean x %.0f, jar center 360)" % mean_x)
+	while main.shake_up.active and frames < 3000:
 		await physics_frame
 		frames += 1
 	_expect(not main.shake_up.active, "shake up finishes (%.1f s)" % (frames / 120.0))
+	_expect(main.shake_up.flips_done == 4, "jar made 4 turns (got %d)" % main.shake_up.flips_done)
 	var space: RID = main.get_world_2d().space
 	var gravity: Vector2 = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR)
 	_expect(gravity.is_equal_approx(Vector2.DOWN), "gravity restored (got %s)" % gravity)
@@ -127,12 +128,12 @@ func _tiers(main: Node) -> Array:
 	return result
 
 
-func _mean_fruit_y(main: Node) -> float:
-	var total := 0.0
+func _mean_fruit_pos(main: Node) -> Vector2:
+	var total := Vector2.ZERO
 	var count := 0
 	for child in main.get_node("Fruits").get_children():
 		if child is Fruit and not child.is_queued_for_deletion():
-			total += child.global_position.y
+			total += child.global_position
 			count += 1
 	return total / maxi(count, 1)
 

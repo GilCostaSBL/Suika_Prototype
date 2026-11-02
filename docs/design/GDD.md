@@ -27,9 +27,11 @@ All numbers live in `config/balance.tres` (edit in the Godot inspector).
 |---|---|---|---|
 | 1 | **Fruit Slot** | 5 | Stash the fruit in the dropper; the queue moves on. Pressing again (free) puts the stashed fruit back in the dropper. One stash per payment. |
 | 2 | **Fruit Swap** | 10 | Reroll the *next* fruit into a different one. |
-| 3 | **Shake Up** (ultimate) | 25 | No drops allowed; a cover slides over the jar, the view zooms out, and the jar flips 180° four times around its center. Fruit tumbles (and can merge) under boosted gravity. Afterwards every fruit gets a fresh settle grace before it can cause game over. Takes ~7 s. |
+| 3 | **Shake Up** (ultimate) | 25 | No drops allowed; a cover slides over the jar, the view zooms out, and the jar turns 360° around its center in four 90° steps. After each step it waits for the fruit to settle before turning again. Fruit tumbles (and can merge). Afterwards every fruit gets a fresh settle grace before it can cause game over. Takes ~8–10 s depending on how full the jar is. |
 
-Abilities are disabled while a Shake Up runs and after game over. See [decision 0002](../decisions/0002-shake-up-rotates-the-view.md) for how the flip is done.
+Abilities are disabled while a Shake Up runs and after game over. See [decision 0002](../decisions/0002-shake-up-rotates-the-view.md) for how the turn is done.
+
+**Future:** art for a locked/unlocked state per ability so players can see at a glance what they can afford (currently buttons simply grey out).
 
 ## 3. Twists backlog
 

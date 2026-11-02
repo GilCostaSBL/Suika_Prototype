@@ -155,9 +155,8 @@ func _spawn_fruit(tier: int, pos: Vector2) -> Fruit:
 	var fruit := Fruit.new()
 	fruit.tier = tier
 	fruit.position = pos
-	# Fruit born mid-shake must not fall asleep while gravity is rotating.
-	fruit.can_sleep = not shake_up.active
 	fruits.add_child(fruit)
+	shake_up.prepare_fruit(fruit)
 	return fruit
 
 
