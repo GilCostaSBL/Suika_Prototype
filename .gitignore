@@ -1,0 +1,16 @@
+# Godot 4 generated cache
+.godot/
+/android/
+
+# Exports
+/build/
+*.tmp
+
+# Obsidian per-user state (keep the rest of docs/.obsidian versioned)
+docs/.obsidian/workspace*.json
+docs/.obsidian/cache
+docs/.trash/
+
+# OS
+Thumbs.db
+.DS_Store
